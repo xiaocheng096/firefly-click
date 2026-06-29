@@ -455,6 +455,7 @@
                 <div class="resource-list" id="audio-list"></div>
             </div>
 
+            <button class="reset-btn" id="reset-merit-btn">重置计数</button>
             <button class="reset-btn" id="reset-btn">重置所有数据</button>
         </div>
     </div>
@@ -501,6 +502,7 @@
         const audioFile = document.getElementById('audio-file');
         const audioList = document.getElementById('audio-list');
         const resetBtn = document.getElementById('reset-btn');
+        const resetMeritBtn = document.getElementById('reset-merit-btn');
         const toast = document.getElementById('toast');
 
         let preloadedAudio = null;
@@ -626,12 +628,10 @@
         }
 
         function deleteResource(id, type) {
-            const isDefault = type === 'image'
-                ? state.images.find(img => img.id === id)?.isDefault
-                : state.audios.find(a => a.id === id)?.isDefault;
+            const resources = type === 'image' ? state.images : state.audios;
 
-            if (isDefault) {
-                showToast('默认资源不能删除');
+            if (resources.length <= 1) {
+                showToast('至少保留一个资源');
                 return;
             }
 
@@ -639,8 +639,8 @@
                 state.images = state.images.filter(img => img.id !== id);
                 localStorage.setItem('images', JSON.stringify(state.images));
                 if (state.selectedImage === id) {
-                    state.selectedImage = 'default-image';
-                    localStorage.setItem('selectedImage', 'default-image');
+                    state.selectedImage = state.images[0].id;
+                    localStorage.setItem('selectedImage', state.selectedImage);
                     loadSelectedResources();
                 }
             } else {
@@ -711,15 +711,8 @@
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete';
                 deleteBtn.textContent = '删除';
-                deleteBtn.disabled = resource.isDefault;
+                deleteBtn.disabled = resources.length <= 1;
                 deleteBtn.addEventListener('click', () => deleteResource(resource.id, type));
-
-                if (resource.isDefault) {
-                    const defaultTag = document.createElement('span');
-                    defaultTag.className = 'default-tag';
-                    defaultTag.textContent = '默认';
-                    info.appendChild(defaultTag);
-                }
 
                 info.appendChild(preview);
                 info.appendChild(name);
@@ -760,6 +753,15 @@
             loadSelectedResources();
             renderResourceLists();
             showToast('已重置所有数据');
+        }
+
+        function resetMerit() {
+            if (!confirm('确定要重置计数吗？')) return;
+
+            state.merit = 0;
+            localStorage.setItem('merit', '0');
+            updateMeritDisplay();
+            showToast('计数已重置');
         }
 
         function bindEvents() {
@@ -838,6 +840,7 @@
             });
 
             resetBtn.addEventListener('click', resetData);
+            resetMeritBtn.addEventListener('click', resetMerit);
         }
 
         init();
