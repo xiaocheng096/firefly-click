@@ -463,7 +463,11 @@
 
     <script>
         const DEFAULT_RESOURCES = {
-            images: [{ id: 'default-image', name: '默认流萤', url: 'media/IMG_SEGMENT_SEND.png', isDefault: true }],
+            images: [
+                { id: 'default-image-1', name: '默认流萤1', url: 'media/IMG_SEGMENT_SEND.png', isDefault: true },
+                { id: 'default-image-2', name: '默认流萤2', url: 'media/IMG_SEGMENT_20260629_095958.png', isDefault: true },
+                { id: 'default-image-3', name: '默认流萤3', url: 'media/87fc3343294bd3333d49813bf8477d130203d501043d80cdb387aed0b503c119.jpg', isDefault: true }
+            ],
             audios: [{ id: 'default-audio', name: '默认音效', url: 'media/a9cb8606-d412-49b7-85f6-f69e8ac2e75b.mp3', isDefault: true }]
         };
 
@@ -472,7 +476,7 @@
             title: localStorage.getItem('title') || '电子流萤',
             prefix: localStorage.getItem('prefix') || '流萤已经cia了',
             suffix: localStorage.getItem('suffix') || '次llo！',
-            selectedImage: localStorage.getItem('selectedImage') || 'default-image',
+            selectedImage: localStorage.getItem('selectedImage') || 'default-image-1',
             selectedAudio: localStorage.getItem('selectedAudio') || 'default-audio',
             images: JSON.parse(localStorage.getItem('images') || JSON.stringify(DEFAULT_RESOURCES.images)),
             audios: JSON.parse(localStorage.getItem('audios') || JSON.stringify(DEFAULT_RESOURCES.audios))
@@ -564,6 +568,21 @@
             updateMeritDisplay();
             playAudio();
             createFloatingText();
+            cycleImage();
+        }
+
+        function cycleImage() {
+            const imageCount = state.images.length;
+            if (imageCount <= 1) return;
+
+            const currentIndex = state.images.findIndex(img => img.id === state.selectedImage);
+            const nextIndex = (currentIndex + 1) % imageCount;
+            const nextImage = state.images[nextIndex];
+
+            state.selectedImage = nextImage.id;
+            localStorage.setItem('selectedImage', nextImage.id);
+            fishImage.src = nextImage.url;
+            renderResourceLists();
         }
 
         function showToast(message) {
