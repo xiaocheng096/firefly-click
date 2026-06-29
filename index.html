@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>电子流萤</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .title {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .merit-counter {
+            font-size: 1.5rem;
+            color: #f4d03f;
+            margin-top: 20px;
+            text-shadow: 0 0 10px rgba(244, 208, 63, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .fish-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .fish-container:active {
+            transform: scale(0.95);
+        }
+
+        .fish-image {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+            transition: filter 0.3s ease;
+        }
+
+        .fish-image:hover {
+            filter: drop-shadow(0 10px 40px rgba(255, 255, 255, 0.2));
+        }
+
+        .floating-text {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f4d03f;
+            text-shadow: 0 0 10px rgba(244, 208, 63, 0.8);
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-80px) scale(1.2); }
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 500;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .settings-panel.active {
+            display: flex;
+        }
+
+        .panel-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .custom-text-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: #ccc;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .custom-text-input {
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .custom-text-input:focus {
+            border-color: #f4d03f;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .custom-text-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .text-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .text-input-group .custom-text-input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .count-label {
+            color: #f4d03f;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .format-hint {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .resource-list {
+            margin-top: 20px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .list-item.selected {
+            border-color: #f4d03f;
+            background: rgba(244, 208, 63, 0.1);
+        }
+
+        .resource-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .resource-preview {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .resource-name {
+            color: #fff;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn.select {
+            background: #f4d03f;
+            color: #333;
+        }
+
+        .action-btn.select:hover {
+            background: #e6c039;
+        }
+
+        .action-btn.delete {
+            background: rgba(255, 99, 71, 0.8);
+            color: #fff;
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(255, 99, 71, 1);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .default-tag {
+            font-size: 0.7rem;
+            color: #f4d03f;
+            background: rgba(244, 208, 63, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 99, 71, 0.2);
+            border: 1px solid rgba(255, 99, 71, 0.5);
+            color: #ff6347;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 99, 71, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .title { font-size: 1.5rem; }
+            .fish-image { width: 220px; height: 220px; }
+            .merit-counter { font-size: 1.2rem; padding: 8px 20px; }
+            .panel-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title" id="main-title">电子流萤</h1>
+        <div class="fish-container" id="fish-container">
+            <img src="media/IMG_SEGMENT_SEND.png" alt="流萤" class="fish-image" id="fish-image">
+        </div>
+        <div class="merit-counter">
+            <span id="merit-prefix">流萤已经cia了</span>
+            <span id="merit-count">0</span>
+            <span id="merit-suffix">次llo！</span>
+        </div>
+    </div>
+
+    <button class="settings-btn" id="settings-btn">⚙️</button>
+
+    <div class="settings-panel" id="settings-panel">
+        <button class="close-btn" id="close-btn">×</button>
+        <div class="panel-content">
+            <h2 class="panel-title">设置</h2>
+
+            <div class="custom-text-section">
+                <span class="section-title">标题</span>
+                <input type="text" class="custom-text-input" id="title-input" placeholder="输入标题">
+            </div>
+
+            <div class="custom-text-section">
+                <span class="section-title">计数文字</span>
+                <div class="format-hint">格式：前缀 + 计数 + 后缀</div>
+                <div class="text-input-group">
+                    <input type="text" class="custom-text-input" id="prefix-input" placeholder="前缀">
+                    <span class="count-label">计数</span>
+                    <input type="text" class="custom-text-input" id="suffix-input" placeholder="后缀">
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <span class="section-title">上传流萤图片</span>
+                <div class="upload-area" id="image-upload">
+                    <input type="file" id="image-file" accept="image/*">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-text">点击或拖拽上传图片</div>
+                </div>
+                <div class="resource-list" id="image-list"></div>
+            </div>
+
+            <div class="upload-section">
+                <span class="section-title">上传敲击音频</span>
+                <div class="upload-area" id="audio-upload">
+                    <input type="file" id="audio-file" accept="audio/*">
+                    <div class="upload-icon">🔊</div>
+                    <div class="upload-text">点击或拖拽上传音频</div>
+                </div>
+                <div class="resource-list" id="audio-list"></div>
+            </div>
+
+            <button class="reset-btn" id="reset-btn">重置所有数据</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const DEFAULT_RESOURCES = {
+            images: [{ id: 'default-image', name: '默认流萤', url: 'media/IMG_SEGMENT_SEND.png', isDefault: true }],
+            audios: [{ id: 'default-audio', name: '默认音效', url: 'media/a9cb8606-d412-49b7-85f6-f69e8ac2e75b.mp3', isDefault: true }]
+        };
+
+        const state = {
+            merit: parseInt(localStorage.getItem('merit') || '0'),
+            title: localStorage.getItem('title') || '电子流萤',
+            prefix: localStorage.getItem('prefix') || '流萤已经cia了',
+            suffix: localStorage.getItem('suffix') || '次llo！',
+            selectedImage: localStorage.getItem('selectedImage') || 'default-image',
+            selectedAudio: localStorage.getItem('selectedAudio') || 'default-audio',
+            images: JSON.parse(localStorage.getItem('images') || JSON.stringify(DEFAULT_RESOURCES.images)),
+            audios: JSON.parse(localStorage.getItem('audios') || JSON.stringify(DEFAULT_RESOURCES.audios))
+        };
+
+        const mainTitleEl = document.getElementById('main-title');
+        const fishContainer = document.getElementById('fish-container');
+        const fishImage = document.getElementById('fish-image');
+        const meritCountEl = document.getElementById('merit-count');
+        const meritPrefixEl = document.getElementById('merit-prefix');
+        const meritSuffixEl = document.getElementById('merit-suffix');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        const closeBtn = document.getElementById('close-btn');
+        const titleInput = document.getElementById('title-input');
+        const prefixInput = document.getElementById('prefix-input');
+        const suffixInput = document.getElementById('suffix-input');
+        const imageUpload = document.getElementById('image-upload');
+        const imageFile = document.getElementById('image-file');
+        const imageList = document.getElementById('image-list');
+        const audioUpload = document.getElementById('audio-upload');
+        const audioFile = document.getElementById('audio-file');
+        const audioList = document.getElementById('audio-list');
+        const resetBtn = document.getElementById('reset-btn');
+        const toast = document.getElementById('toast');
+
+        let preloadedAudio = null;
+
+        function init() {
+            titleInput.value = state.title;
+            prefixInput.value = state.prefix;
+            suffixInput.value = state.suffix;
+            updateTitle();
+            updateMeritDisplay();
+            loadSelectedResources();
+            renderResourceLists();
+            bindEvents();
+            preloadAudio();
+        }
+
+        function updateTitle() {
+            mainTitleEl.textContent = state.title;
+        }
+
+        function updateMeritDisplay() {
+            meritCountEl.textContent = state.merit;
+            meritPrefixEl.textContent = state.prefix;
+            meritSuffixEl.textContent = state.suffix;
+        }
+
+        function loadSelectedResources() {
+            const selectedImg = state.images.find(img => img.id === state.selectedImage);
+            if (selectedImg) fishImage.src = selectedImg.url;
+
+            const selectedAudioObj = state.audios.find(a => a.id === state.selectedAudio);
+            if (selectedAudioObj) preloadAudio(selectedAudioObj.url);
+        }
+
+        function preloadAudio(url = null) {
+            const audioUrl = url || (state.audios.find(a => a.id === state.selectedAudio)?.url || '');
+            if (!audioUrl) return;
+            preloadedAudio = new Audio(audioUrl);
+            preloadedAudio.preload = 'auto';
+            preloadedAudio.load();
+        }
+
+        function playAudio() {
+            if (!preloadedAudio) return;
+            try {
+                const audioClone = preloadedAudio.cloneNode(true);
+                audioClone.volume = 0.8;
+                audioClone.play().catch(e => console.warn('音频播放失败:', e));
+            } catch (e) {
+                console.warn('播放音频出错:', e);
+            }
+        }
+
+        function createFloatingText() {
+            const textEl = document.createElement('div');
+            textEl.className = 'floating-text';
+            textEl.textContent = '功德+1';
+            fishContainer.appendChild(textEl);
+            textEl.addEventListener('animationend', () => textEl.remove());
+        }
+
+        function handleFishClick() {
+            state.merit++;
+            localStorage.setItem('merit', state.merit.toString());
+            updateMeritDisplay();
+            playAudio();
+            createFloatingText();
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function handleFileUpload(files, type) {
+            const file = files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('文件大小不能超过5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const resource = {
+                    id: generateId(),
+                    name: file.name,
+                    url: e.target.result,
+                    isDefault: false
+                };
+
+                if (type === 'image') {
+                    state.images.push(resource);
+                    localStorage.setItem('images', JSON.stringify(state.images));
+                } else {
+                    state.audios.push(resource);
+                    localStorage.setItem('audios', JSON.stringify(state.audios));
+                }
+                renderResourceLists();
+                showToast(`成功添加${type === 'image' ? '图片' : '音频'}`);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteResource(id, type) {
+            const isDefault = type === 'image'
+                ? state.images.find(img => img.id === id)?.isDefault
+                : state.audios.find(a => a.id === id)?.isDefault;
+
+            if (isDefault) {
+                showToast('默认资源不能删除');
+                return;
+            }
+
+            if (type === 'image') {
+                state.images = state.images.filter(img => img.id !== id);
+                localStorage.setItem('images', JSON.stringify(state.images));
+                if (state.selectedImage === id) {
+                    state.selectedImage = 'default-image';
+                    localStorage.setItem('selectedImage', 'default-image');
+                    loadSelectedResources();
+                }
+            } else {
+                state.audios = state.audios.filter(a => a.id !== id);
+                localStorage.setItem('audios', JSON.stringify(state.audios));
+                if (state.selectedAudio === id) {
+                    state.selectedAudio = 'default-audio';
+                    localStorage.setItem('selectedAudio', 'default-audio');
+                    loadSelectedResources();
+                }
+            }
+            renderResourceLists();
+            showToast('已删除资源');
+        }
+
+        function selectResource(id, type) {
+            if (type === 'image') {
+                state.selectedImage = id;
+                localStorage.setItem('selectedImage', id);
+            } else {
+                state.selectedAudio = id;
+                localStorage.setItem('selectedAudio', id);
+            }
+            loadSelectedResources();
+            renderResourceLists();
+            showToast(`已切换${type === 'image' ? '图片' : '音频'}`);
+        }
+
+        function renderResourceLists() {
+            renderList(imageList, state.images, state.selectedImage, 'image');
+            renderList(audioList, state.audios, state.selectedAudio, 'audio');
+        }
+
+        function renderList(container, resources, selectedId, type) {
+            container.innerHTML = '';
+            resources.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = `list-item ${resource.id === selectedId ? 'selected' : ''}`;
+
+                const info = document.createElement('div');
+                info.className = 'resource-info';
+
+                const preview = document.createElement(type === 'image' ? 'img' : 'div');
+                preview.className = 'resource-preview';
+                if (type === 'image') {
+                    preview.src = resource.url;
+                } else {
+                    preview.textContent = '🎵';
+                    preview.style.display = 'flex';
+                    preview.style.alignItems = 'center';
+                    preview.style.justifyContent = 'center';
+                    preview.style.fontSize = '1.2rem';
+                }
+
+                const name = document.createElement('span');
+                name.className = 'resource-name';
+                name.textContent = resource.name;
+
+                const actions = document.createElement('div');
+                actions.className = 'resource-actions';
+
+                const selectBtn = document.createElement('button');
+                selectBtn.className = 'action-btn select';
+                selectBtn.textContent = resource.id === selectedId ? '已选中' : '选择';
+                selectBtn.disabled = resource.id === selectedId;
+                selectBtn.addEventListener('click', () => selectResource(resource.id, type));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn delete';
+                deleteBtn.textContent = '删除';
+                deleteBtn.disabled = resource.isDefault;
+                deleteBtn.addEventListener('click', () => deleteResource(resource.id, type));
+
+                if (resource.isDefault) {
+                    const defaultTag = document.createElement('span');
+                    defaultTag.className = 'default-tag';
+                    defaultTag.textContent = '默认';
+                    info.appendChild(defaultTag);
+                }
+
+                info.appendChild(preview);
+                info.appendChild(name);
+                actions.appendChild(selectBtn);
+                actions.appendChild(deleteBtn);
+                item.appendChild(info);
+                item.appendChild(actions);
+                container.appendChild(item);
+            });
+        }
+
+        function resetData() {
+            if (!confirm('确定要重置所有数据吗？这将删除所有自定义资源并恢复默认设置。')) return;
+
+            state.merit = 0;
+            state.title = '电子流萤';
+            state.prefix = '流萤已经cia了';
+            state.suffix = '次llo！';
+            state.selectedImage = 'default-image';
+            state.selectedAudio = 'default-audio';
+            state.images = JSON.parse(JSON.stringify(DEFAULT_RESOURCES.images));
+            state.audios = JSON.parse(JSON.stringify(DEFAULT_RESOURCES.audios));
+
+            localStorage.removeItem('merit');
+            localStorage.removeItem('title');
+            localStorage.removeItem('prefix');
+            localStorage.removeItem('suffix');
+            localStorage.removeItem('selectedImage');
+            localStorage.removeItem('selectedAudio');
+            localStorage.removeItem('images');
+            localStorage.removeItem('audios');
+
+            titleInput.value = state.title;
+            prefixInput.value = state.prefix;
+            suffixInput.value = state.suffix;
+            updateTitle();
+            updateMeritDisplay();
+            loadSelectedResources();
+            renderResourceLists();
+            showToast('已重置所有数据');
+        }
+
+        function bindEvents() {
+            fishContainer.addEventListener('click', handleFishClick);
+            fishContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleFishClick();
+            }, { passive: false });
+
+            settingsBtn.addEventListener('click', () => settingsPanel.classList.add('active'));
+            closeBtn.addEventListener('click', () => settingsPanel.classList.remove('active'));
+            settingsPanel.addEventListener('click', (e) => {
+                if (e.target === settingsPanel) settingsPanel.classList.remove('active');
+            });
+
+            titleInput.addEventListener('input', (e) => {
+                state.title = e.target.value;
+                localStorage.setItem('title', state.title);
+                updateTitle();
+            });
+
+            prefixInput.addEventListener('input', (e) => {
+                state.prefix = e.target.value;
+                localStorage.setItem('prefix', state.prefix);
+                updateMeritDisplay();
+            });
+
+            suffixInput.addEventListener('input', (e) => {
+                state.suffix = e.target.value;
+                localStorage.setItem('suffix', state.suffix);
+                updateMeritDisplay();
+            });
+
+            imageUpload.addEventListener('click', () => imageFile.click());
+            imageFile.addEventListener('change', (e) => {
+                handleFileUpload(e.target.files, 'image');
+                e.target.value = '';
+            });
+
+            audioUpload.addEventListener('click', () => audioFile.click());
+            audioFile.addEventListener('change', (e) => {
+                handleFileUpload(e.target.files, 'audio');
+                e.target.value = '';
+            });
+
+            imageUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                imageUpload.style.borderColor = '#f4d03f';
+            });
+
+            imageUpload.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                imageUpload.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            });
+
+            imageUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                imageUpload.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                handleFileUpload(e.dataTransfer.files, 'image');
+            });
+
+            audioUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                audioUpload.style.borderColor = '#f4d03f';
+            });
+
+            audioUpload.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                audioUpload.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            });
+
+            audioUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                audioUpload.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                handleFileUpload(e.dataTransfer.files, 'audio');
+            });
+
+            resetBtn.addEventListener('click', resetData);
+        }
+
+        init();
+    </script>
+</body>
+</html>
