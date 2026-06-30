@@ -40,7 +40,7 @@ firefly-click/
 1. 确保 `media` 目录下存在默认图片和音频文件
 2. 使用浏览器直接打开 `index.html` 文件即可运行
 3. 无需任何服务器环境，离线可用
-4. 或通过链接 https://xiaocheng096.github.io/firefly-click/ 在线访问
+4. 或通过链接 https://xiaocheng096.github.io/firefly-click/（该仓库pages链接）或短链 https://lnk.ink/firefly 在线访问
 
 ### 环境要求
 - 主流现代浏览器：Chrome、Firefox、Safari、Edge
